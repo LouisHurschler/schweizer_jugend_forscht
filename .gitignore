@@ -1,0 +1,6 @@
+TODO.md
+.direnv
+__pycache__
+
+dns.log
+mosquitto.db
