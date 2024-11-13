@@ -35,9 +35,8 @@ class BoxHandler:
     # it should toggle the relay state, which can be done by sending a message
     # to device_id/relays/1 with text "0" or "1" depending on the relay state
     def toggle_device(self, state: int):
-
         """Publish a message to toggle the device's relay state.
-        
+
         Args:
             state (int): Relay state (0 for off, 1 for on).
         """
@@ -63,13 +62,18 @@ class BoxHandler:
         timespanLog.ParseFromString(message.payload)
 
         data_tmp = {}
-        data_tmp["current"] = timespanLog.L1_current_average / 1000 # current in ...
-        data_tmp["voltage"] = timespanLog.L1_voltage_average / 1000 # voltage in ...
+        data_tmp["current"] = timespanLog.L1_current_average / 1000  # current in ...
+        data_tmp["voltage"] = timespanLog.L1_voltage_average / 1000  # voltage in ...
         data_tmp["apparent_energy"] = timespanLog.L1_apparent_energy / 10000
         data_tmp["power_factor"] = timespanLog.L1_power_factor_average / 1000
         print(data_tmp["power_factor"])
-        data_tmp["power"] = data_tmp["current"] * data_tmp["voltage"] * data_tmp["power_factor"]
-        data_tmp["time"] = timespanLog.timestamp_to.seconds
+        data_tmp["power"] = (
+            data_tmp["current"] * data_tmp["voltage"] * data_tmp["power_factor"]
+        )
+
+        # device measures time as UTC + 2
+        # add Zeitumstellung in Winterzeit, 60 * 60 seconds
+        data_tmp["time"] = timespanLog.timestamp_to.seconds + 60 * 60
 
         power_pd = pd.DataFrame(data_tmp, index=[0])
 

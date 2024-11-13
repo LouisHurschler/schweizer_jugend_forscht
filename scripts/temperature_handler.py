@@ -1,5 +1,5 @@
 import pandas as pd
-import time
+import datetime as dt
 import numpy as np
 import paho.mqtt.client as mqtt
 
@@ -29,12 +29,10 @@ class TemperatureHandler:
         self.client.subscribe(self.sub_topic)
 
     def _on_message(self, client, userdata, message):
-        print("temperature message received")
-        print(float(message.payload))
         self.temp = float(message.payload)
 
     def get_current_temperature(self) -> pd.DataFrame:
         if not self.temp:
             return pd.DataFrame()
-        data = pd.DataFrame({"time": [time.time()], "temperature": [self.temp]})
+        data = pd.DataFrame({"time": [dt.datetime.now()], "temperature": [self.temp]})
         return data

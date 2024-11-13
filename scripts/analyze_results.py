@@ -17,7 +17,7 @@ def analyze_results():
     # get data from files
     box_data = pd.read_csv(current_path + "/data/res_box.csv")
     temp_data = pd.read_csv(current_path + "/data/res_temp.csv")
-    
+
     temperature_reached = temp_data["temperature"][
         temp_data["temperature"] >= target_temp - threshold
     ]
@@ -34,9 +34,8 @@ def analyze_results():
             ]
         )
         print(f"percentage in threshold: {percentage_in_threshold}")
-    else: 
+    else:
         print("target temperature never reached!!!")
-        
 
     if len(box_data["time"]) >= 2:
         time_diff_box = box_data["time"].iloc[-1] - box_data["time"].iloc[0]

@@ -55,6 +55,7 @@ class BoilerSimulationApp:
             os.path.join(self.current_path, "data/Schweizer_Jugend_forscht_logo.png")
         )
         original_width, original_height = self.original_image.size
+        # adjust this factor such that it fits nicely into the frame
         scaling_factor = min(
             screen_width / (original_width * 10.0),
             screen_height / (original_height * 10.0),
@@ -172,6 +173,13 @@ class BoilerSimulationApp:
             [self.temperature_data, self.temperature_handler.get_current_temperature()],
             ignore_index=True,
         )
+
+        # Save data to CSV files
+        self.box_data.to_csv(self.current_path + "/data/res_box.csv", index=False)
+        self.temperature_data.to_csv(
+            self.current_path + "/data/res_temp.csv", index=False
+        )
+
         # this code gets called every second. Your task is to add logic here to reach a constant temperature
         ############################# Enter logic here #############################
         # toggles device randomly for now
@@ -180,7 +188,7 @@ class BoilerSimulationApp:
         # else:
         #     self.toggle_device(0)
         ############################# Enter logic here #############################
-        
+
         self.redraw_canvas()
         # This function gets called every second. Do stuff here to steer the water temperature
         self.root.after(1000, self.update_plot)
@@ -189,29 +197,23 @@ class BoilerSimulationApp:
     def redraw_canvas(self):
         self.ax.clear()
         self.axtemp.clear()
-        max_datapoints = 100
 
         max_value = 0.0
+        if "time" in self.temperature_data.keys():
+            last_temperature_measurement = self.temperature_data["time"].iloc[0]
+        else:
+            last_temperature_measurement = dt.datetime.now()
         for i, keyword in enumerate(self.stuff_to_plot):
             if (
                 self.checkbutton_states[i].get() == 1
                 and keyword in self.box_data.keys()
             ):
-                if len(self.box_data["time"]) <= max_datapoints:
-                    self.ax.plot(
-                        pd.to_datetime(self.box_data["time"], unit="s"),
-                        self.box_data[keyword],
-                        label=keyword,
-                    )
-                    max_value = max(max_value, max(self.box_data[keyword]))
-                else:
-                    self.ax.plot(
-                        pd.to_datetime(
-                            self.box_data["time"][-max_datapoints:], unit="s"
-                        ),
-                        self.box_data[keyword][-max_datapoints:],
-                        label=keyword,
-                    )
+                self.ax.plot(
+                    pd.to_datetime(self.box_data["time"], unit="s"),
+                    self.box_data[keyword],
+                    label=keyword,
+                )
+                max_value = max(max_value, max(self.box_data[keyword]))
             else:
                 if self.checkbutton_states[i].get() == 1 and not self.box_data.empty:
                     print(
@@ -222,36 +224,32 @@ class BoilerSimulationApp:
         # Plot temperature data
         i = len(self.stuff_to_plot)
         if "temperature" in self.temperature_data and self.temp_state.get() == 1:
-            if len(self.temperature_data["time"]) <= max_datapoints:
-                self.axtemp.plot(
-                    pd.to_datetime(self.temperature_data["time"], unit="s"),
-                    self.temperature_data["temperature"],
-                    label="temperature",
-                )
-            else:
-                self.axtemp.plot(
-                    pd.to_datetime(
-                        self.temperature_data["time"][-max_datapoints:], unit="s"
-                    ),
-                    self.temperature_data["temperature"][-max_datapoints:],
-                    label="temperature",
-                )
+            self.axtemp.plot(
+                pd.to_datetime(self.temperature_data["time"], unit="s"),
+                self.temperature_data["temperature"],
+                label="temperature",
+            )
             self.highlight_relay_states(
                 self.axtemp, max(self.temperature_data["temperature"])
             )
 
-        self.ax.xaxis.set_major_locator(mdates.AutoDateLocator())
-        self.ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
-        self.ax.xaxis.set_major_locator(plt.MaxNLocator(4))
-        self.canvas.draw()
-        # print("box_data:")
-        # print(self.box_data)
-
-        # Save data to CSV files
-        self.box_data.to_csv(self.current_path + "/data/res_box.csv", index=False)
-        self.temperature_data.to_csv(
-            self.current_path + "/data/res_temp.csv", index=False
+        # This step is done to "clip off" old values, such that we only see the last min in the plot
+        # get_xlim get the values of the x-axis in days,
+        # therefore to enable max one minute of plotting substract 1/(24*60)
+        current_xlim = self.fig.gca().get_xlim()
+        self.ax.set_xlim(
+            [
+                max(current_xlim[0], current_xlim[1] - 1.0 / (24.0 * 60.0)),
+                current_xlim[1],
+            ]
         )
+
+        self.ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+        self.ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M:%S"))
+        self.ax.xaxis.set_major_locator(plt.MaxNLocator(4))
+
+        # update the new canvas
+        self.canvas.draw()
 
     # Highlights relay states on the plot
     def highlight_relay_states(self, ax, max_value):
@@ -259,7 +257,6 @@ class BoilerSimulationApp:
         last_time = None
         last_state = None
         for time, state in zip(self.relay_states["time"], self.relay_states["state"]):
-            time = time - dt.timedelta(seconds=60 * 60)
             if last_time:
                 if int(state) == 0:
                     color = "green"
@@ -281,7 +278,7 @@ class BoilerSimulationApp:
         ax.fill_betweenx(
             [0, max_value],
             last_time,
-            dt.datetime.now() - dt.timedelta(seconds=60 * 60),
+            dt.datetime.now(),
             color=color,
             alpha=alphavalue,
             zorder=1,
