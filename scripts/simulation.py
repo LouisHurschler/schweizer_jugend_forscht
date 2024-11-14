@@ -17,24 +17,10 @@ import matplotlib.dates as mdates
 
 
 class BoilerSimulationApp:
+
     def __init__(self, root):
         # general configuration
-        self.background = "white"
-        self.root = root
-        self.root.configure(background=self.background)
-        self.font_size = 20
-
-        # create a 9x9 grid for layout
-        self.root.grid_columnconfigure(0, weight=1)
-        self.root.grid_columnconfigure(1, weight=3)
-        self.root.grid_columnconfigure(2, weight=1)
-
-        self.root.grid_rowconfigure(0, weight=1)
-        self.root.grid_rowconfigure(1, weight=2)
-        self.root.grid_rowconfigure(2, weight=1)
-
-        # Define the path to the current directory for loading resources
-        self.current_path = os.path.dirname(os.path.abspath(__file__))
+        self.setup_general_config(root)
 
         # Initialize handlers for temperature and device controls
         self.temperature_handler = TemperatureHandler()
@@ -42,77 +28,188 @@ class BoilerSimulationApp:
 
         # Default relay state
         self.relay_state = "1"
+        # Initialize data storage for plots and relay states
+        self.box_data = pd.DataFrame()
+        self.temperature_data = pd.DataFrame()
+        self.relay_states = pd.DataFrame(
+            {"time": [dt.datetime.now()], "state": [self.relay_state]}
+        )
+
+        # setup slider to manually control heater
+        self.setup_heater_slider()
+
+        # setup plotting
+        self.setup_plotting()
+
+        # setup plotting
+        self.setup_checkbuttons()
+
+        # set initial device state (off)
+        self.toggle_device(0)
+
+    def setup_general_config(self, root):
+        """Configures the main application window and sets initial parameters."""
+
+        self.background = "white"
+        self.root = root
+        self.root.configure(background=self.background)
+        self.font_size = 12
+
+        self.main_frame = tk.Frame(
+            root,
+            background=self.background,
+            padx=30,
+            pady=30,
+        )
+
+        # Define the path to the current directory for loading resources
+        self.current_path = os.path.dirname(os.path.abspath(__file__))
+
+        # create a 3x2 grid for layout
+        self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid_columnconfigure(1, weight=2)
+
+        self.main_frame.grid_rowconfigure(0, weight=1)
+        self.main_frame.grid_rowconfigure(1, weight=2)
+        self.main_frame.grid_rowconfigure(2, weight=2)
+        self.main_frame.pack(expand=True, fill="both")
+
+        # Define frames for layout organization
+        self.slider_frame = tk.Frame(
+            self.main_frame,
+            background=self.background,
+        )
+        self.slider_frame.grid(row=1, column=0, sticky="w")
+        self.plot_frame = tk.Frame(self.main_frame, background=self.background)
+        self.plot_frame.grid(row=1, column=1, rowspan=2)
+        self.checkbutton_frame = tk.Frame(
+            self.main_frame, background=self.background
+        )
+        self.checkbutton_frame.grid(row=2, column=0, sticky="w")
 
         # Set up fullscreen window to match screen dimensions
-        screen_width = self.root.winfo_screenwidth()  # Get screen width
-        screen_height = self.root.winfo_screenheight()  # Get screen height
-        self.root.geometry(f"{screen_width}x{screen_height}+0+0")
+        self.screen_width = self.root.winfo_screenwidth()
+        self.screen_height = self.root.winfo_screenheight()
+        self.root.geometry(
+            f"{self.screen_width}x{self.screen_height}+1000+1000"
+        )
 
         # Load and display schweizerjugendforscht logo image with scaling
-        self.image_frame = tk.Frame(self.root, background=self.background)
-        self.image_frame.grid(row=0, column=0, columnspan=3)
-        self.original_image = Image.open(
-            os.path.join(self.current_path, "data/Schweizer_Jugend_forscht_logo.png")
+        self.image_frame_left = tk.Frame(
+            self.main_frame, background=self.background
         )
-        original_width, original_height = self.original_image.size
+        self.image_frame_left.grid(row=0, column=0, sticky="wn")
+        self.image_frame_right = tk.Frame(
+            self.main_frame, background=self.background
+        )
+        self.image_frame_right.grid(row=0, column=1, sticky="en")
+        self.original_image_sjf = Image.open(
+            os.path.join(
+                self.current_path, "data/Schweizer_Jugend_forscht_logo.png"
+            )
+        )
+        self.original_image_hslu = Image.open(
+            os.path.join(
+                self.current_path, "data/HSLU_Logo_DE_Schwarz_rgb.png"
+            )
+        )
+        original_width_sjf, original_height_sjf = self.original_image_sjf.size
+        original_width_hslu, original_height_hslu = (
+            self.original_image_hslu.size
+        )
+        new_image_height = int(self.screen_height / 20.0)
         # adjust this factor such that it fits nicely into the frame
-        scaling_factor = min(
-            screen_width / (original_width * 10.0),
-            screen_height / (original_height * 10.0),
-        )
         # Convert the PIL image to a Tkinter-compatible image
-        self.image = ImageTk.PhotoImage(
-            self.original_image.resize(
+        self.image_sjf = ImageTk.PhotoImage(
+            self.original_image_sjf.resize(
                 (
-                    int(original_width * scaling_factor),
-                    int(original_height * scaling_factor),
+                    int(
+                        original_width_sjf
+                        * new_image_height
+                        / original_height_sjf
+                    ),
+                    new_image_height,
                 )
             )
         )
 
         self.image_label = tk.Label(
-            self.image_frame,
-            image=self.image,
-            compound="left",
+            self.image_frame_right,
+            image=self.image_sjf,
             background=self.background,
-        )  # what does compound = "left" mean? how can i have the picture on the left?
-        self.image_label.grid(row=0, column=0)
+        )
+        self.image_label.pack()
+        # Convert the PIL image to a Tkinter-compatible image
+        self.image_hslu = ImageTk.PhotoImage(
+            self.original_image_hslu.resize(
+                (
+                    int(
+                        original_width_hslu
+                        * new_image_height
+                        / original_height_hslu
+                    ),
+                    new_image_height,
+                )
+            )
+        )
 
-        # Define frames for layout organization
-        self.left_frame = tk.Frame(self.root, background=self.background)
-        self.left_frame.grid(row=1, column=0)
-        self.middle_frame = tk.Frame(self.root, background=self.background)
-        self.middle_frame.grid(row=1, column=1)
-        self.right_frame = tk.Frame(self.root, background=self.background)
-        self.right_frame.grid(row=1, column=2)
+        self.image_label_hslu = tk.Label(
+            self.image_frame_left,
+            image=self.image_hslu,
+            background=self.background,
+        )
+        self.image_label_hslu.pack()
+        self.main_frame.pack()
+
+    def setup_heater_slider(self):
 
         # Heater control slider in the left frame
         self.label_heater = tk.Label(
-            self.left_frame, text="Switch Heater manually", background=self.background
+            self.slider_frame,
+            text="Heater",
+            font=("Arial", self.font_size, "bold"),
+            background=self.background,
         )
         self.slider_heater = tk.Scale(
-            self.left_frame,
+            self.slider_frame,
             from_=0,
             to=1,
+            font=("Arial", self.font_size, "bold"),
             orient=tk.HORIZONTAL,
             background=self.background,
             highlightthickness=0,
             command=lambda value: self.toggle_device(value),
         )
-        self.label_heater.grid(row=0, column=0)
-        self.slider_heater.grid(row=1, column=0)
+        self.label_heater.pack()
+        self.slider_heater.pack()
 
-        # Initialize data storage for plots and relay states
-        self.box_data = pd.DataFrame()
-        self.temperature_data = pd.DataFrame()
-        self.relay_states = pd.DataFrame(columns=["time", "state"])
+    def setup_checkbuttons(self):
+        self.checkbutton_states = [
+            tk.IntVar(value=1) for _ in self.stuff_to_plot
+        ]
+        self.temp_state = tk.IntVar(value=1)
+        self.checkbuttons = [
+            tk.Checkbutton(
+                self.checkbutton_frame,
+                font=("Arial", self.font_size),
+                variable=var,
+                text=name,
+                background=self.background,
+                highlightthickness=0,
+                anchor="w",
+            ).pack(anchor="w")
+            for var, name in zip(self.checkbutton_states, self.stuff_to_plot)
+        ]
+        self.checkbutton_temp = tk.Checkbutton(
+            self.checkbutton_frame,
+            font=("Arial", self.font_size),
+            variable=self.temp_state,
+            text="temperature",
+            background=self.background,
+            highlightthickness=0,
+        ).pack(anchor="w")
 
-        # Add initial relay state with current time
-        default = pd.DataFrame(
-            {"time": [dt.datetime.now()], "state": [self.relay_state]}
-        )
-        self.relay_states = pd.concat([self.relay_states, default], ignore_index=True)
-
+    def setup_plotting(self):
         # Setup data points for plotting and checkbuttons to control display options
         self.stuff_to_plot = [
             "voltage",
@@ -121,44 +218,27 @@ class BoilerSimulationApp:
             "apparent_energy",
             "power_factor",
         ]
-        self.checkbutton_states = [tk.IntVar(value=1) for _ in self.stuff_to_plot]
-        self.temp_state = tk.IntVar(value=1)
-        self.checkbuttons = [
-            tk.Checkbutton(
-                self.right_frame,
-                variable=var,
-                text=name,
-                background=self.background,
-                highlightthickness=0,
-            )
-            for var, name in zip(self.checkbutton_states, self.stuff_to_plot)
-        ]
-        self.checkbutton_temp = tk.Checkbutton(
-            self.right_frame,
-            variable=self.temp_state,
-            text="temperature",
-            background=self.background,
-            highlightthickness=0,
-        )
-        for i, checkbutton in enumerate(self.checkbuttons):
-            checkbutton.grid(row=i, column=0)
-        self.checkbutton_temp.grid(row=len(self.checkbuttons), column=0)
-
         # Initialize matplotlib figure and canvas
-        self.fig, (self.ax, self.axtemp) = plt.subplots(2, 1, sharex=True)
-        self.canvas = FigureCanvasTkAgg(self.fig, master=self.middle_frame)
+        self.fig, (self.ax, self.axtemp) = plt.subplots(
+            2, 1, sharex=True, figsize=(14, 10)
+        )
+        # set background colors for plot
+        self.fig.set_facecolor(self.background)
+        self.ax.set_facecolor(self.background)
+        self.axtemp.set_facecolor(self.background)
+
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.plot_frame)
         self.canvas.draw()
         self.canvas.get_tk_widget().grid(row=0, column=0)
         self.canvas.draw()
-
-        # set initial device state (off)
-        self.toggle_device(0)
 
     # Toggles the device state based on slider input
     def toggle_device(self, value: int):
         if self.relay_state != value:
             self.box_handler.toggle_device(value)
-            new_entry = pd.DataFrame({"time": [dt.datetime.now()], "state": [value]})
+            new_entry = pd.DataFrame(
+                {"time": [dt.datetime.now()], "state": [value]}
+            )
             self.relay_states = pd.concat(
                 [self.relay_states, new_entry], ignore_index=True
             )
@@ -170,12 +250,17 @@ class BoilerSimulationApp:
     def update_plot(self):
         self.box_data = self.box_handler.get_data()
         self.temperature_data = pd.concat(
-            [self.temperature_data, self.temperature_handler.get_current_temperature()],
+            [
+                self.temperature_data,
+                self.temperature_handler.get_current_temperature(),
+            ],
             ignore_index=True,
         )
 
         # Save data to CSV files
-        self.box_data.to_csv(self.current_path + "/data/res_box.csv", index=False)
+        self.box_data.to_csv(
+            self.current_path + "/data/res_box.csv", index=False
+        )
         self.temperature_data.to_csv(
             self.current_path + "/data/res_temp.csv", index=False
         )
@@ -200,7 +285,9 @@ class BoilerSimulationApp:
 
         max_value = 0.0
         if "time" in self.temperature_data.keys():
-            last_temperature_measurement = self.temperature_data["time"].iloc[0]
+            last_temperature_measurement = self.temperature_data["time"].iloc[
+                0
+            ]
         else:
             last_temperature_measurement = dt.datetime.now()
         for i, keyword in enumerate(self.stuff_to_plot):
@@ -215,7 +302,10 @@ class BoilerSimulationApp:
                 )
                 max_value = max(max_value, max(self.box_data[keyword]))
             else:
-                if self.checkbutton_states[i].get() == 1 and not self.box_data.empty:
+                if (
+                    self.checkbutton_states[i].get() == 1
+                    and not self.box_data.empty
+                ):
                     print(
                         f"{keyword} not in self.box_data.keys: {self.box_data.keys()}"
                     )
@@ -223,7 +313,10 @@ class BoilerSimulationApp:
 
         # Plot temperature data
         i = len(self.stuff_to_plot)
-        if "temperature" in self.temperature_data and self.temp_state.get() == 1:
+        if (
+            "temperature" in self.temperature_data
+            and self.temp_state.get() == 1
+        ):
             self.axtemp.plot(
                 pd.to_datetime(self.temperature_data["time"], unit="s"),
                 self.temperature_data["temperature"],
@@ -233,20 +326,8 @@ class BoilerSimulationApp:
                 self.axtemp, max(self.temperature_data["temperature"])
             )
 
-        # This step is done to "clip off" old values, such that we only see the last min in the plot
-        # get_xlim get the values of the x-axis in days,
-        # therefore to enable max one minute of plotting substract 1/(24*60)
-        current_xlim = self.fig.gca().get_xlim()
-        self.ax.set_xlim(
-            [
-                max(current_xlim[0], current_xlim[1] - 1.0 / (24.0 * 60.0)),
-                current_xlim[1],
-            ]
-        )
-
-        self.ax.xaxis.set_major_locator(mdates.AutoDateLocator())
-        self.ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M:%S"))
-        self.ax.xaxis.set_major_locator(plt.MaxNLocator(4))
+        # configure dates and shown region
+        self.configure_plot_axis()
 
         # update the new canvas
         self.canvas.draw()
@@ -256,7 +337,9 @@ class BoilerSimulationApp:
         alphavalue = 0.25
         last_time = None
         last_state = None
-        for time, state in zip(self.relay_states["time"], self.relay_states["state"]):
+        for time, state in zip(
+            self.relay_states["time"], self.relay_states["state"]
+        ):
             if last_time:
                 if int(state) == 0:
                     color = "green"
@@ -283,6 +366,24 @@ class BoilerSimulationApp:
             alpha=alphavalue,
             zorder=1,
         )
+
+    def configure_plot_axis(self):
+        # This step is done to "clip off" old values, such that we only see the last min in the plot
+        # get_xlim get the values of the x-axis in days,
+        # therefore to enable max two minutes of plotting substract 1/(24*30)
+        current_xlim = self.fig.gca().get_xlim()
+
+        # add ten seconds on the right side for nicer plots
+        xlim_end = mdates.date2num(dt.datetime.now()) + 1.0 / (24 * 60 * 6)
+        xlim_start = max(current_xlim[0], xlim_end - 1.0 / (24 * 30))
+
+        self.ax.set_xlim([xlim_start, xlim_end])
+
+        self.ax.xaxis.set_major_locator(mdates.AutoDateLocator())
+        self.ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M:%S"))
+        self.ax.xaxis.set_major_locator(plt.MaxNLocator(4))
+        self.ax.legend()
+        self.axtemp.legend()
 
 
 def main():

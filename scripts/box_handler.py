@@ -66,7 +66,6 @@ class BoxHandler:
         data_tmp["voltage"] = timespanLog.L1_voltage_average / 1000  # voltage in ...
         data_tmp["apparent_energy"] = timespanLog.L1_apparent_energy / 10000
         data_tmp["power_factor"] = timespanLog.L1_power_factor_average / 1000
-        print(data_tmp["power_factor"])
         data_tmp["power"] = (
             data_tmp["current"] * data_tmp["voltage"] * data_tmp["power_factor"]
         )

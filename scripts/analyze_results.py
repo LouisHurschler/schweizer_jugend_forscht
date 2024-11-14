@@ -1,13 +1,80 @@
 import pandas as pd
 import os
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+
+# TODO:
+# add relay state??? For that, it should be added in simulatino??? For that, it should be added in simulation
+# think about other ways of analyzing results, excel? jupyter notebook?
+
+
+def plot_results(
+    temp_data: pd.DataFrame,
+    box_data: pd.DataFrame,
+    target_temp: float,
+    threshold: float,
+):
+
+    fig, ax1 = plt.subplots()
+
+    times = pd.to_datetime(temp_data["time"])
+    max_temp = max(temp_data["temperature"])
+    min_temp = min(temp_data["temperature"])
+
+    ax1.plot(times, temp_data["temperature"])
+    if (
+        max_temp > target_temp - threshold
+        and min_temp < target_temp + threshold
+    ):
+        ax1.fill_between(
+            times,
+            max(target_temp - threshold, min_temp),
+            min(target_temp + threshold, max_temp),
+            color="green",
+            alpha=0.5,
+        )
+
+    if min_temp < target_temp - threshold:
+        ax1.fill_between(
+            times,
+            min_temp,
+            min(target_temp - threshold, max_temp),
+            color="red",
+            alpha=0.5,
+        )
+
+    if max_temp > target_temp + threshold:
+        ax1.fill_between(
+            times,
+            target_temp + threshold,
+            max_temp,
+            color="red",
+            alpha=0.5,
+        )
+
+    ax1.xaxis.set_major_locator(mdates.AutoDateLocator())
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+
+    ax2 = ax1.twinx()
+
+    to_plot = pd.to_datetime(box_data["time"], unit="s") > times.iloc[0]
+
+    ax2.plot(
+        pd.to_datetime(box_data["time"], unit="s")[to_plot],
+        box_data["power"][to_plot],
+        color="orange",
+    )
+
+    plt.show()
+    # plt.set_mayor_locator(mdates.AutoDateLocator)
 
 
 def analyze_results():
     # the main goal is to minimize the mean power whilst maximizing (at best 100%) the percentage
     # in threshold
-    target_temp = 26
-    threshold = 2
+    target_temp = 26.0
+    threshold = 2.0
     current_path = os.path.dirname(os.path.abspath(__file__))
     # windows
     # box_data = pd.read_csv(current_path + "\\data\\res_box.csv")
@@ -25,7 +92,9 @@ def analyze_results():
         first_timestep_to_reach_threshold = temp_data["temperature"][
             temp_data["temperature"] >= target_temp - threshold
         ].index[0]
-        relevant_data = temp_data["temperature"][first_timestep_to_reach_threshold:]
+        relevant_data = temp_data["temperature"][
+            first_timestep_to_reach_threshold:
+        ]
         first_timestep = temp_data["time"][first_timestep_to_reach_threshold]
         percentage_in_threshold = np.mean(
             [
@@ -49,6 +118,7 @@ def analyze_results():
         print(mean_current * mean_voltage)
     else:
         print("too less box datapoints to calculate mean")
+    plot_results(temp_data, box_data, target_temp, threshold)
 
 
 if __name__ == "__main__":
