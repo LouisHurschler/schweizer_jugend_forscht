@@ -21,6 +21,8 @@ def plot_results(
     times = pd.to_datetime(temp_data["time"])
     max_temp = max(temp_data["temperature"])
     min_temp = min(temp_data["temperature"])
+    print(min_temp)
+    print(max_temp)
 
     ax1.plot(times, temp_data["temperature"])
     if (
@@ -73,8 +75,8 @@ def plot_results(
 def analyze_results():
     # the main goal is to minimize the mean power whilst maximizing (at best 100%) the percentage
     # in threshold
-    target_temp = 26.0
-    threshold = 2.0
+    target_temp = 40.0
+    threshold = 3.0
     current_path = os.path.dirname(os.path.abspath(__file__))
     # windows
     # box_data = pd.read_csv(current_path + "\\data\\res_box.csv")
@@ -116,6 +118,7 @@ def analyze_results():
         print(f"mean voltage: {mean_voltage}")
         print(f"mean power: {mean_power}")
         print(mean_current * mean_voltage)
+        print(f"mean temperature: {temp_data["temperature"].mean()}")
     else:
         print("too less box datapoints to calculate mean")
     plot_results(temp_data, box_data, target_temp, threshold)

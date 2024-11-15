@@ -215,7 +215,6 @@ class BoilerSimulationApp:
             "voltage",
             "current",
             "power",
-            "apparent_energy",
             "power_factor",
         ]
         # Initialize matplotlib figure and canvas
@@ -267,11 +266,28 @@ class BoilerSimulationApp:
 
         # this code gets called every second. Your task is to add logic here to reach a constant temperature
         ############################# Enter logic here #############################
-        # toggles device randomly for now
-        # if np.random.normal() > 0:
-        #     self.toggle_device(1)
-        # else:
-        #     self.toggle_device(0)
+        target_temp = 40
+        threshold = 3
+        if not self.temperature_data.empty:
+            temp = self.temperature_data["temperature"].iloc[-1]
+        else:
+            temp = target_temp
+        if temp < target_temp - 0.9 * threshold and int(self.relay_state) == 0:
+            self.toggle_device("1")
+        if temp > target_temp - 0.9 * threshold and int(self.relay_state) == 1:
+            self.toggle_device("0")
+        # if (
+        #     target_temp > temp > target_temp - threshold
+        #     and int(self.relay_state) == 0
+        # ):
+        #     if not (
+        #         "temperature" not in self.temperature_data.keys()
+        #         or len(self.temperature_data["temperature"]) < 2
+        #     ):
+        #         diff = temp - self.temperature_data["temperature"].iloc[-2]
+        #         if diff < 0:
+        #             self.toggle_device("1")
+
         ############################# Enter logic here #############################
 
         self.redraw_canvas()
@@ -377,7 +393,7 @@ class BoilerSimulationApp:
         xlim_end = mdates.date2num(dt.datetime.now()) + 1.0 / (24 * 60 * 6)
         xlim_start = max(current_xlim[0], xlim_end - 1.0 / (24 * 30))
 
-        self.ax.set_xlim([xlim_start, xlim_end])
+        # self.ax.set_xlim([xlim_start, xlim_end])
 
         self.ax.xaxis.set_major_locator(mdates.AutoDateLocator())
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M:%S"))

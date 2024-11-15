@@ -3,6 +3,7 @@ import numpy as np
 import time
 import paho.mqtt.client as mqtt
 from data import TimeSpanLog_pb2
+import struct
 
 
 class BoxHandler:
@@ -12,11 +13,14 @@ class BoxHandler:
 
         # Set MQTT broker information
         self.host_ip = "192.168.2.1"
-        self.client.username_pw_set(username="admin", password="enflateHSLU2023!")
+        self.client.username_pw_set(
+            username="admin", password="enflateHSLU2023!"
+        )
 
         # Device-specific configurations
         self.device_id = "GSWIC023110015"
-        self.sub_topic = (f"{self.device_id}/measurements/1/1", 0)
+        # self.sub_topic = (f"{self.device_id}/measurements/1/1", 0)
+        self.sub_topic = ("energy_measurements/1", 0)
 
         # Define what happens if client connects or gets a new message
         self.client.on_message = self._on_message
@@ -41,7 +45,10 @@ class BoxHandler:
             state (int): Relay state (0 for off, 1 for on).
         """
         self.client.publish(
-            topic=f"{self.device_id}/relays/1", payload=str(state), qos=0, retain=False
+            topic=f"{self.device_id}/relays/1",
+            payload=str(state),
+            qos=0,
+            retain=False,
         )
 
     # return current data of the Box. Note that it will return the full dataframe
@@ -58,21 +65,21 @@ class BoxHandler:
     def _on_message(self, client, userdata, message):
         # the message is parsed such that it does not take that much space.
         # it can be encrypted with the function timespanLog.ParseFromString(text)
-        timespanLog = TimeSpanLog_pb2.TimeSpanLog()
-        timespanLog.ParseFromString(message.payload)
+        current, voltage, power_factor, time = struct.unpack(
+            ">4I", message.payload
+        )
 
         data_tmp = {}
-        data_tmp["current"] = timespanLog.L1_current_average / 1000  # current in ...
-        data_tmp["voltage"] = timespanLog.L1_voltage_average / 1000  # voltage in ...
-        data_tmp["apparent_energy"] = timespanLog.L1_apparent_energy / 10000
-        data_tmp["power_factor"] = timespanLog.L1_power_factor_average / 1000
+        data_tmp["current"] = current * 0.001  # current in A
+        data_tmp["voltage"] = voltage * 0.001  # voltage in V
+        data_tmp["power_factor"] = power_factor * 0.001  # between -1 and 1
         data_tmp["power"] = (
-            data_tmp["current"] * data_tmp["voltage"] * data_tmp["power_factor"]
-        )
+            abs(current * voltage * power_factor) * 0.000000000001
+        )  # in kW
 
         # device measures time as UTC + 2
         # add Zeitumstellung in Winterzeit, 60 * 60 seconds
-        data_tmp["time"] = timespanLog.timestamp_to.seconds + 60 * 60
+        data_tmp["time"] = time
 
         power_pd = pd.DataFrame(data_tmp, index=[0])
 
