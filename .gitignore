@@ -3,6 +3,7 @@ TODO.md
 *__pycache__
 
 
+venv
 
 dns.log
 mosquitto.db
