@@ -2,6 +2,7 @@ import pandas as pd
 import datetime as dt
 import numpy as np
 import paho.mqtt.client as mqtt
+import struct
 
 
 class TemperatureHandler:
@@ -29,7 +30,7 @@ class TemperatureHandler:
         self.client.subscribe(self.sub_topic)
 
     def _on_message(self, client, userdata, message):
-        temp, time = struct.unpack("2f", message.payload)
+        temp, time = struct.unpack(">2d", message.payload)
         temp_pd = pd.DataFrame({"temperature": [temp], "time": [time]})
 
         if not self.data.empty:

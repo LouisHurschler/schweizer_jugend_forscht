@@ -2,6 +2,7 @@ import paho.mqtt.client as mqtt
 import datetime as dt
 import numpy as np
 import struct
+import time
 
 client = mqtt.Client()
 client.connect(host="192.168.2.1", port=1883, keepalive=60)
@@ -23,8 +24,8 @@ while True:
         print("error")
         continue
     # print(temperature)
-    time = float(dt.datetime.now().timestamp()) + 60 * 60
-    curr_data = struct.pack(">4f", temperature, time)
+    curr_time = float(dt.datetime.now().timestamp()) + 60 * 60
+    curr_data = struct.pack(">2f", temperature, curr_time)
 
     client.publish(
         topic="temperature_device/measurements/1",

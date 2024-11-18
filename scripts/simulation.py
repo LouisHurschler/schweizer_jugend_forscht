@@ -13,9 +13,15 @@ import datetime as dt
 import matplotlib.dates as mdates
 
 
+# convert timestamps (seconds since January 1, 1970) to datetime objects
+# note that the timestamp object shows the time measured in utc.
+# to convert to MET (UTC +1), we have to add one hour
+def convert_timestamp_to_MET_datetimes(timestamps: pd.Series) -> list:
+    times = pd.to_datetime(timestamps, unit="s") + pd.Timedelta(hours=1)
+    return times
+
+
 # BoilerSimulationApp class handles the GUI setup and functionality for a boiler simulation.
-
-
 class BoilerSimulationApp:
 
     def __init__(self, root):
@@ -176,6 +182,7 @@ class BoilerSimulationApp:
             to=1,
             font=("Arial", self.font_size, "bold"),
             orient=tk.HORIZONTAL,
+            # troughcolor=self.background,
             background=self.background,
             highlightthickness=0,
             command=lambda value: self.toggle_device(value),
@@ -263,16 +270,16 @@ class BoilerSimulationApp:
         # this code gets called every second. Your task is to add logic here to reach a constant temperature
         ############################# Enter logic here #############################
         # test logic which heats iff temp < target_temp - 0.9 threshold
-        target_temp = 40
-        threshold = 3
-        if not self.temperature_data.empty:
-            temp = self.temperature_data["temperature"].iloc[-1]
-        else:
-            temp = target_temp
-        if temp < target_temp - 0.9 * threshold and int(self.relay_state) == 0:
-            self.toggle_device("1")
-        if temp > target_temp - 0.9 * threshold and int(self.relay_state) == 1:
-            self.toggle_device("0")
+        # target_temp = 40
+        # threshold = 3
+        # if not self.temperature_data.empty:
+        #     temp = self.temperature_data["temperature"].iloc[-1]
+        # else:
+        #     temp = target_temp
+        # if temp < target_temp - 0.9 * threshold and int(self.relay_state) == 0:
+        #     self.toggle_device("1")
+        # if temp > target_temp - 0.9 * threshold and int(self.relay_state) == 1:
+        #     self.toggle_device("0")
 
         ############################# Enter logic here #############################
 
@@ -298,7 +305,7 @@ class BoilerSimulationApp:
                 and keyword in self.box_data.keys()
             ):
                 self.ax.plot(
-                    pd.to_datetime(self.box_data["time"], unit="s"),
+                    convert_timestamp_to_MET_datetimes(self.box_data["time"]),
                     self.box_data[keyword],
                     label=keyword,
                 )
@@ -320,7 +327,9 @@ class BoilerSimulationApp:
             and self.temp_state.get() == 1
         ):
             self.axtemp.plot(
-                pd.to_datetime(self.temperature_data["time"], unit="s"),
+                convert_timestamp_to_MET_datetimes(
+                    self.temperature_data["time"]
+                ),
                 self.temperature_data["temperature"],
                 label="temperature",
             )
