@@ -14,8 +14,6 @@ import matplotlib.dates as mdates
 
 
 # BoilerSimulationApp class handles the GUI setup and functionality for a boiler simulation.
-
-
 class BoilerSimulationApp:
 
     def __init__(self, root):
@@ -23,8 +21,8 @@ class BoilerSimulationApp:
         self.setup_general_config(root)
 
         # Initialize handlers for temperature and device controls
-        self.temperature_handler = TemperatureHandler()
-        self.box_handler = BoxHandler()
+        self.temperature_handler = ...
+        self.box_handler = ...
 
         # Default relay state
         self.relay_state = "1"
@@ -47,6 +45,7 @@ class BoilerSimulationApp:
         # set initial device state (off)
         self.toggle_device(0)
 
+    # change general settings like backgroundcolor or font size here
     def setup_general_config(self, root):
         """Configures the main application window and sets initial parameters."""
 
@@ -161,6 +160,7 @@ class BoilerSimulationApp:
         self.image_label_hslu.pack()
         self.main_frame.pack()
 
+    # change slider config here
     def setup_heater_slider(self):
 
         # Heater control slider in the left frame

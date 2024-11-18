@@ -11,7 +11,8 @@ class TemperatureHandler:
         # set ip to listen
         self.host_ip = "192.168.2.1"
         # set username and password
-        self.client.username_pw_set(username="admin", password="enflateHSLU2023!")
+        # should work without, test this
+        # self.client.username_pw_set(username="admin", password="enflateHSLU2023!")
         # subscribe to topic
         self.sub_topic = (f"temperature_device/measurements/1", 0)
         # define what happens if client connects or gets a message
@@ -22,17 +23,19 @@ class TemperatureHandler:
         self.data = pd.DataFrame()
         # start listening loop of client
         self.client.loop_start()
-        self.temp = None
 
     def _on_connect(self, client, userdata, flags, rc):
         print(f"Connected with result code {rc}")
         self.client.subscribe(self.sub_topic)
 
     def _on_message(self, client, userdata, message):
-        self.temp = float(message.payload)
+        temp, time = struct.unpack("2f", message.payload)
+        temp_pd = pd.DataFrame({"temperature": [temp], "time": [time]})
+
+        if not self.data.empty:
+            self.data = pd.concat([self.data, temp_pd], ignore_index=True)
+        else:
+            self.data = temp_pd
 
     def get_current_temperature(self) -> pd.DataFrame:
-        if not self.temp:
-            return pd.DataFrame()
-        data = pd.DataFrame({"time": [dt.datetime.now()], "temperature": [self.temp]})
-        return data
+        return self.data

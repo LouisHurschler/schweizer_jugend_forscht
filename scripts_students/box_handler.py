@@ -11,24 +11,16 @@ class BoxHandler:
         # initialize the MQTT client
         self.client = mqtt.Client()
 
-        # Set MQTT broker information
-        # This works only if connected to enflate wlan
-        self.host_ip = "192.168.2.1"
-        # is this necessary if mqtt broker is self hosted??? -> test without
-        # self.client.username_pw_set(
-        #     username="admin", password="enflateHSLU2023!"
-        # )
-
-        # Device-specific configurations
-        # self.sub_topic = (f"{self.device_id}/measurements/1/1", 0)
-        self.sub_topic = ("energy_measurements/1", 0)
+        # state topic to subscribe to
+        self.energy_measurement_topic = (..., 0)  # The 0 stands for QOS=0
 
         # Define what happens if client connects or gets a new message
         self.client.on_message = self._on_message
         self.client.on_connect = self._on_connect
 
         # Connect client to the broker
-        self.client.connect(host=self.host_ip, port=1883, keepalive=60)
+        # This works only if connected to enflate wlan
+        self.client.connect(host=..., port=..., keepalive=60)
 
         # Initialize data storage
         self.data = pd.DataFrame()
@@ -46,20 +38,20 @@ class BoxHandler:
             state (int): Relay state (0 for off, 1 for on).
         """
         self.client.publish(
-            topic="GSWIC023110015/relays/1",
-            payload=str(state),
+            topic=...,  # choose right topic
+            payload=...,  # send a string of the desired state
             qos=0,
             retain=False,
         )
 
     # return current data of the Box. Note that it will return the full dataframe
     def get_data(self) -> pd.DataFrame:
-        return self.data
+        return ...
 
     # This function gets called when the client connects to the broker
     def _on_connect(self, client, userdata, flags, rc):
         print(f"Connected with result code {rc}")
-        self.client.subscribe(self.sub_topic)
+        self.client.subscribe(...)
 
     # This function gets called when the client gets a message on a topic
     # it previously subscribed to.
@@ -69,20 +61,20 @@ class BoxHandler:
         current, voltage, power_factor, time = struct.unpack(
             ">4I", message.payload
         )
+        # note that the current gets returned in 0.001 A, the voltage in 0.001 V and the powerfactor as an int between -1000 and 1000
 
         data_tmp = {}
-        data_tmp["current"] = current * 0.001  # current in A
-        data_tmp["voltage"] = voltage * 0.001  # voltage in V
-        data_tmp["power_factor"] = power_factor * 0.001  # between -1 and 1
-        data_tmp["power"] = (
-            abs(current * voltage * power_factor) * 0.000000000001
-        )  # in kW
+        data_tmp["current"] = ...  # current in A
+        data_tmp["voltage"] = ...  # voltage in V
+        data_tmp["power_factor"] = ...  # between -1 and 1
+        data_tmp["power"] = ...  # in kW, make sure it is positive
 
         # data should already be sent in the right timezone
-        data_tmp["time"] = time
+        data_tmp["time"] = ...
 
         power_pd = pd.DataFrame(data_tmp, index=[0])
 
+        # concatinate the new data to the box data
         if not self.data.empty:
             self.data = pd.concat([self.data, power_pd], ignore_index=True)
         else:
