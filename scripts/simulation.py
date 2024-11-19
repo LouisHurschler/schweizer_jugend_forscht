@@ -85,13 +85,13 @@ class BoilerSimulationApp:
             self.main_frame,
             background=self.background,
         )
-        self.slider_frame.grid(row=1, column=0, sticky="w")
+        self.slider_frame.grid(row=1, column=0)
         self.plot_frame = tk.Frame(self.main_frame, background=self.background)
         self.plot_frame.grid(row=1, column=1, rowspan=2)
         self.checkbutton_frame = tk.Frame(
             self.main_frame, background=self.background
         )
-        self.checkbutton_frame.grid(row=2, column=0, sticky="w")
+        self.checkbutton_frame.grid(row=2, column=0)
 
         # Set up fullscreen window to match screen dimensions
         self.screen_width = self.root.winfo_screenwidth()
@@ -200,18 +200,20 @@ class BoilerSimulationApp:
                 self.checkbutton_frame,
                 font=("Arial", self.font_size),
                 variable=var,
-                text=name,
+                text=label,
                 background=self.background,
                 highlightthickness=0,
                 anchor="w",
             ).pack(anchor="w")
-            for var, name in zip(self.checkbutton_states, self.stuff_to_plot)
+            for var, (_, label) in zip(
+                self.checkbutton_states, self.stuff_to_plot
+            )
         ]
         self.checkbutton_temp = tk.Checkbutton(
             self.checkbutton_frame,
             font=("Arial", self.font_size),
             variable=self.temp_state,
-            text="temperature",
+            text="temperature [C°]",
             background=self.background,
             highlightthickness=0,
         ).pack(anchor="w")
@@ -219,10 +221,10 @@ class BoilerSimulationApp:
     def setup_plotting(self):
         # Setup data points for plotting and checkbuttons to control display options
         self.stuff_to_plot = [
-            "voltage",
-            "current",
-            "power",
-            "power_factor",
+            ("voltage", "voltage [V]"),
+            ("current", "current [A]"),
+            ("power", "power [kW]"),
+            ("power_factor", "power factor"),
         ]
         # Initialize matplotlib figure and canvas
         self.fig, (self.ax, self.axtemp) = plt.subplots(
@@ -299,7 +301,7 @@ class BoilerSimulationApp:
             ]
         else:
             last_temperature_measurement = dt.datetime.now()
-        for i, keyword in enumerate(self.stuff_to_plot):
+        for i, (keyword, label) in enumerate(self.stuff_to_plot):
             if (
                 self.checkbutton_states[i].get() == 1
                 and keyword in self.box_data.keys()
@@ -307,7 +309,7 @@ class BoilerSimulationApp:
                 self.ax.plot(
                     convert_timestamp_to_MET_datetimes(self.box_data["time"]),
                     self.box_data[keyword],
-                    label=keyword,
+                    label=label,
                 )
                 max_value = max(max_value, max(self.box_data[keyword]))
             else:
@@ -331,7 +333,7 @@ class BoilerSimulationApp:
                     self.temperature_data["time"]
                 ),
                 self.temperature_data["temperature"],
-                label="temperature",
+                label="temperature [C°]",
             )
             self.highlight_relay_states(
                 self.axtemp, max(self.temperature_data["temperature"])

@@ -4,10 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-# TODO:
-# add relay state??? For that, it should be added in simulatino??? For that, it should be added in simulation
-# think about other ways of analyzing results, excel? jupyter notebook?
-
 
 def plot_results(
     temp_data: pd.DataFrame,
@@ -18,13 +14,13 @@ def plot_results(
 
     fig, ax1 = plt.subplots()
 
-    times = pd.to_datetime(temp_data["time"])
+    times = pd.to_datetime(temp_data["time"], unit="s")
     max_temp = max(temp_data["temperature"])
     min_temp = min(temp_data["temperature"])
     print(min_temp)
     print(max_temp)
 
-    ax1.plot(times, temp_data["temperature"])
+    ax1.plot(times, temp_data["temperature"], label="temperature [C°]")
     if (
         max_temp > target_temp - threshold
         and min_temp < target_temp + threshold
@@ -65,11 +61,15 @@ def plot_results(
     ax2.plot(
         pd.to_datetime(box_data["time"], unit="s")[to_plot],
         box_data["power"][to_plot],
+        label="power [kW]",
         color="orange",
     )
+    ax1.set_xlabel("time")
+    ax1.set_ylabel("Temperature [C°]")
+    ax2.set_ylabel("Power [kW]")
 
+    fig.legend()
     plt.show()
-    # plt.set_mayor_locator(mdates.AutoDateLocator)
 
 
 def analyze_results():

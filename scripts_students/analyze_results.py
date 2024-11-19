@@ -19,9 +19,9 @@ def plot_results(
     # use matplotlib or similar libraries to plot results
     fig, ax1 = plt.subplots()
 
-    times = pd.to_datetime(temp_data["time"])
+    times = pd.to_datetime(temp_data["time"], unit="s")
     temps = temp_data["temperature"]
-    ax1.plot(times, temps)
+    ax1.plot(times, temps, label="temperture [C°]")
 
     ax1.xaxis.set_major_locator(mdates.AutoDateLocator())
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
@@ -31,9 +31,14 @@ def plot_results(
     ax2.plot(
         pd.to_datetime(box_data["time"], unit="s"),
         box_data["power"],
+        label="Power [kW]",
         color="orange",
     )
+    ax1.set_xlabel("time")
+    ax1.set_ylabel("Temperature [C°]")
+    ax2.set_ylabel("Power [kW]")
 
+    fig.legend()
     plt.show()
 
 
