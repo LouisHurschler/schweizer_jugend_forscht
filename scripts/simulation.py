@@ -1,8 +1,5 @@
 import tkinter as tk
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import numpy as np
-import time
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import pandas as pd
 import os
@@ -255,7 +252,8 @@ class BoilerSimulationApp:
             self.slider_heater.set(value)
 
     # Updates the plot with the latest data
-    def update_plot(self):
+    # you can add additional information, for example to stop at the next timestep
+    def update_plot(self, additional_information=None):
         self.box_data = self.box_handler.get_data()
         self.temperature_data = (
             self.temperature_handler.get_current_temperature()
@@ -272,22 +270,49 @@ class BoilerSimulationApp:
         # this code gets called every second. Your task is to add logic here to reach a constant temperature
         ############################# Enter logic here #############################
         # test logic which heats iff temp < target_temp - 0.9 threshold
-        # target_temp = 40
-        # threshold = 3
-        # if not self.temperature_data.empty:
-        #     temp = self.temperature_data["temperature"].iloc[-1]
-        # else:
-        #     temp = target_temp
-        # if temp < target_temp - 0.9 * threshold and int(self.relay_state) == 0:
-        #     self.toggle_device("1")
-        # if temp > target_temp - 0.9 * threshold and int(self.relay_state) == 1:
-        #     self.toggle_device("0")
+        target_temp = 45
+        threshold = 3
+        if additional_information == "stop":
+            self.toggle_device("0")
+            additional_information = 3
+        if additional_information != None and additional_information != "stop":
+            if additional_information <= 0:
+                additional_information = None
+            else:
+                additional_information -= 1
 
+        if not self.temperature_data.empty:
+            temp = self.temperature_data["temperature"].iloc[-1]
+            if len(self.temperature_data["temperature"]) > 1:
+                last_temp = self.temperature_data["temperature"].iloc[-2]
+            else:
+                last_temp = target_temp
+        else:
+            temp = target_temp
+            last_temp = target_temp
+        if temp < target_temp - 0.9 * threshold and int(self.relay_state) == 0:
+            self.toggle_device("1")
+        if temp > target_temp - 0.9 * threshold and int(self.relay_state) == 1:
+            self.toggle_device("0")
+        if (
+            target_temp - threshold < temp < target_temp
+            and last_temp > temp
+            and int(self.relay_state) == 0
+        ):
+            if additional_information == None:
+                self.toggle_device("1")
+                additional_information = "stop"
+
+        print(additional_information, temp)
         ############################# Enter logic here #############################
 
         self.redraw_canvas()
         # This function gets called every second. Do stuff here to steer the water temperature
-        self.root.after(1000, self.update_plot)
+        self.root.after(
+            1000,
+            self.update_plot,
+            additional_information,
+        )
 
     # Clears and redraws the matplotlib canvas with current data
     def redraw_canvas(self):
@@ -387,7 +412,7 @@ class BoilerSimulationApp:
         current_xlim = self.fig.gca().get_xlim()
 
         # add ten seconds on the right side for nicer plots
-        xlim_end = mdates.date2num(dt.datetime.now()) + 1.0 / (24 * 60 * 6)
+        xlim_end = current_xlim[1]
         xlim_start = max(current_xlim[0], xlim_end - 1.0 / (24 * 30))
 
         # self.ax.set_xlim([xlim_start, xlim_end])
