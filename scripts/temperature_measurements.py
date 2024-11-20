@@ -11,7 +11,7 @@ client.connect(host="192.168.2.1", port=1883, keepalive=60)
 while True:
     tempfile = open(
         "/sys/bus/w1/devices/28-000000837d52/w1_slave", "r"
-    )  # update this
+    ) 
     tempdata = tempfile.read()
     tempfile.close()
 
@@ -24,8 +24,8 @@ while True:
         print("error")
         continue
     # print(temperature)
-    curr_time = float(dt.datetime.now().timestamp()) + 60 * 60
-    curr_data = struct.pack(">2f", temperature, curr_time)
+    curr_time = float(dt.datetime.now().timestamp())
+    curr_data = struct.pack(">2d", temperature, curr_time)
 
     client.publish(
         topic="temperature_device/measurements/1",

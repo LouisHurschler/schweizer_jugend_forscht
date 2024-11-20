@@ -73,7 +73,7 @@ def run_modbus_forever():
                 res_current,
                 res_voltage,
                 res_power_factor,
-                int(dt.datetime.now().timestamp()) + 60 * 60,
+                int(dt.datetime.now().timestamp()),
             )
 
             mqttclient.publish(
