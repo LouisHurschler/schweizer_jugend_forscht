@@ -93,9 +93,7 @@ class BoilerSimulationApp:
         # Set up fullscreen window to match screen dimensions
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
-        self.root.geometry(
-            f"{self.screen_width}x{self.screen_height}+1000+1000"
-        )
+        self.root.geometry(f"{self.screen_width}x{self.screen_height}+0+0")
 
         # Load and display schweizerjugendforscht logo image with scaling
         self.image_frame_left = tk.Frame(
@@ -162,7 +160,6 @@ class BoilerSimulationApp:
             background=self.background,
         )
         self.image_label_hslu.pack()
-        self.main_frame.pack()
 
     def setup_heater_slider(self):
 
@@ -270,40 +267,40 @@ class BoilerSimulationApp:
         # this code gets called every second. Your task is to add logic here to reach a constant temperature
         ############################# Enter logic here #############################
         # test logic which heats iff temp < target_temp - 0.9 threshold
-        target_temp = 45
-        threshold = 3
-        if additional_information == "stop":
-            self.toggle_device("0")
-            additional_information = 3
-        if additional_information != None and additional_information != "stop":
-            if additional_information <= 0:
-                additional_information = None
-            else:
-                additional_information -= 1
+        # target_temp = 45
+        # threshold = 3
+        # if additional_information == "stop":
+        #     self.toggle_device("0")
+        #     additional_information = 3
+        # if additional_information != None and additional_information != "stop":
+        #     if additional_information <= 0:
+        #         additional_information = None
+        #     else:
+        #         additional_information -= 1
 
-        if not self.temperature_data.empty:
-            temp = self.temperature_data["temperature"].iloc[-1]
-            if len(self.temperature_data["temperature"]) > 1:
-                last_temp = self.temperature_data["temperature"].iloc[-2]
-            else:
-                last_temp = target_temp
-        else:
-            temp = target_temp
-            last_temp = target_temp
-        if temp < target_temp - 0.9 * threshold and int(self.relay_state) == 0:
-            self.toggle_device("1")
-        if temp > target_temp - 0.9 * threshold and int(self.relay_state) == 1:
-            self.toggle_device("0")
-        if (
-            target_temp - threshold < temp < target_temp
-            and last_temp > temp
-            and int(self.relay_state) == 0
-        ):
-            if additional_information == None:
-                self.toggle_device("1")
-                additional_information = "stop"
+        # if not self.temperature_data.empty:
+        #     temp = self.temperature_data["temperature"].iloc[-1]
+        #     if len(self.temperature_data["temperature"]) > 1:
+        #         last_temp = self.temperature_data["temperature"].iloc[-2]
+        #     else:
+        #         last_temp = target_temp
+        # else:
+        #     temp = target_temp
+        #     last_temp = target_temp
+        # if temp < target_temp - 0.9 * threshold and int(self.relay_state) == 0:
+        #     self.toggle_device("1")
+        # if temp > target_temp - 0.9 * threshold and int(self.relay_state) == 1:
+        #     self.toggle_device("0")
+        # if (
+        #     target_temp - threshold < temp < target_temp
+        #     and last_temp > temp
+        #     and int(self.relay_state) == 0
+        # ):
+        #     if additional_information == None:
+        #         self.toggle_device("1")
+        #         additional_information = "stop"
 
-        print(additional_information, temp)
+        # print(additional_information, temp)
         ############################# Enter logic here #############################
 
         self.redraw_canvas()
@@ -404,6 +401,8 @@ class BoilerSimulationApp:
             alpha=alphavalue,
             zorder=1,
         )
+        if max_value > 0:
+            ax.legend()
 
     def configure_plot_axis(self):
         # This step is done to "clip off" old values, such that we only see the last min in the plot
@@ -420,8 +419,6 @@ class BoilerSimulationApp:
         self.ax.xaxis.set_major_locator(mdates.AutoDateLocator())
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M:%S"))
         self.ax.xaxis.set_major_locator(plt.MaxNLocator(4))
-        self.ax.legend()
-        self.axtemp.legend()
 
 
 def main():

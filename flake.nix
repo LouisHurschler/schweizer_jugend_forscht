@@ -34,10 +34,7 @@
                     numpy
                     pandas
                     tkinter
-                    plotly
                     paho-mqtt
-                    google
-                    protobuf
                   ]))        ];
         buildInputs = with pkgs; [ 
         ];

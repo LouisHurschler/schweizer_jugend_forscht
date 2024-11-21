@@ -90,7 +90,7 @@ class BoilerSimulationApp:
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
         self.root.geometry(
-            f"{self.screen_width}x{self.screen_height}+1000+1000"
+            f"{self.screen_width}x{self.screen_height}+0+0"
         )
 
         # Load and display schweizerjugendforscht logo image with scaling
@@ -246,7 +246,8 @@ class BoilerSimulationApp:
             self.slider_heater.set(value)
 
     # Updates the plot with the latest data
-    def update_plot(self):
+    # you can add additional information, for example to stop at the next timestep
+    def update_plot(self, additional_information=None)):
         self.box_data = self.box_handler.get_data()
         self.temperature_data = (
             self.temperature_handler.get_current_temperature()
@@ -261,24 +262,23 @@ class BoilerSimulationApp:
         )
 
         # this code gets called every second. Your task is to add logic here to reach a constant temperature
+        # You can use the additional_information to store some other information, for example
+        # if you want to not heat for three seconds, you could store 3 and reduce it in every call by
+        # one until it stays 0
         ############################# Enter logic here #############################
-        # test logic which heats iff temp < target_temp - 0.9 threshold
         target_temp = 40
         threshold = 3
-        if not self.temperature_data.empty:
-            temp = self.temperature_data["temperature"].iloc[-1]
-        else:
-            temp = target_temp
-        if temp < target_temp - 0.9 * threshold and int(self.relay_state) == 0:
+        # random heating
+        if np.random.normal() > 0:
             self.toggle_device("1")
-        if temp > target_temp - 0.9 * threshold and int(self.relay_state) == 1:
+        else:
             self.toggle_device("0")
 
         ############################# Enter logic here #############################
 
         self.redraw_canvas()
         # This function gets called every second. Do stuff here to steer the water temperature
-        self.root.after(1000, self.update_plot)
+        self.root.after(1000, self.update_plot, additional_information)
 
     # Clears and redraws the matplotlib canvas with current data
     def redraw_canvas(self):
@@ -368,6 +368,10 @@ class BoilerSimulationApp:
             alpha=alphavalue,
             zorder=1,
         )
+        # only if max_value > 0, something was drawn.
+        # if something was drawn, add a legend 
+        if max_value > 0
+            ax.legend()
 
     def configure_plot_axis(self):
         # This step is done to "clip off" old values, such that we only see the last min in the plot
@@ -384,8 +388,6 @@ class BoilerSimulationApp:
         self.ax.xaxis.set_major_locator(mdates.AutoDateLocator())
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M:%S"))
         self.ax.xaxis.set_major_locator(plt.MaxNLocator(4))
-        self.ax.legend()
-        self.axtemp.legend()
 
 
 def main():

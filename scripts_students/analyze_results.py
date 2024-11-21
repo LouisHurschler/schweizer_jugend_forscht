@@ -45,7 +45,7 @@ def plot_results(
 def analyze_results():
     # the main goal is to minimize the mean power whilst maximizing (at best 100%) the percentage
     # in threshold
-    target_temp = 40.0
+    target_temp = 45.0
     threshold = 3.0
     current_path = os.path.dirname(os.path.abspath(__file__))
     # windows
