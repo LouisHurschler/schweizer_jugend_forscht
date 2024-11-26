@@ -20,7 +20,7 @@ class BoilerSimulationApp:
         # general configuration
         self.setup_general_config(root)
 
-        # Initialize handlers for temperature and device controls
+        # TODO: Initialize handlers for temperature and device controls
         self.temperature_handler = ...
         self.box_handler = ...
 
@@ -48,7 +48,9 @@ class BoilerSimulationApp:
     # change general settings like backgroundcolor or font size here
     def setup_general_config(self, root):
         """Configures the main application window and sets initial parameters."""
-
+        # TODO: fill out all blank spaces. Additionaly, you can change the values such that the
+        #       GUI looks better
+        
         self.background = "white"
         self.root = root
         self.root.configure(background=self.background)
@@ -56,9 +58,9 @@ class BoilerSimulationApp:
 
         self.main_frame = tk.Frame(
             root,
-            background=self.background,
-            padx=30,
-            pady=30,
+            background=...,
+            padx=..., # boundary around the main frame, set a number which looks clean
+            pady=..., # boundary around the main frame, set a number which looks clean
         )
 
         # Define the path to the current directory for loading resources
@@ -76,13 +78,13 @@ class BoilerSimulationApp:
         # Define frames for layout organization
         self.slider_frame = tk.Frame(
             self.main_frame,
-            background=self.background,
+            background=...,
         )
         self.slider_frame.grid(row=1, column=0, sticky="w")
         self.plot_frame = tk.Frame(self.main_frame, background=self.background)
         self.plot_frame.grid(row=1, column=1, rowspan=2)
         self.checkbutton_frame = tk.Frame(
-            self.main_frame, background=self.background
+            self.main_frame, background=...
         )
         self.checkbutton_frame.grid(row=2, column=0, sticky="w")
 
@@ -95,11 +97,11 @@ class BoilerSimulationApp:
 
         # Load and display schweizerjugendforscht logo image with scaling
         self.image_frame_left = tk.Frame(
-            self.main_frame, background=self.background
+            self.main_frame, background=...
         )
         self.image_frame_left.grid(row=0, column=0, sticky="wn")
         self.image_frame_right = tk.Frame(
-            self.main_frame, background=self.background
+            self.main_frame, background=...
         )
         self.image_frame_right.grid(row=0, column=1, sticky="en")
         self.original_image_sjf = Image.open(
@@ -378,12 +380,12 @@ class BoilerSimulationApp:
         # get_xlim get the values of the x-axis in days,
         # therefore to enable max two minutes of plotting substract 1/(24*30)
         current_xlim = self.fig.gca().get_xlim()
-
         # add ten seconds on the right side for nicer plots
-        xlim_end = mdates.date2num(dt.datetime.now()) + 1.0 / (24 * 60 * 6)
-        xlim_start = max(current_xlim[0], xlim_end - 1.0 / (24 * 30))
-
-        # self.ax.set_xlim([xlim_start, xlim_end])
+        xlim_end = current_xlim[1]
+        xlim_start = current_xlim[0]
+        
+        # TODO: set limits
+        self.ax.set_xlim(left=..., right=...)
 
         self.ax.xaxis.set_major_locator(mdates.AutoDateLocator())
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M:%S"))

@@ -32,7 +32,8 @@ class TemperatureHandler:
     def _on_connect(self, client, userdata, flags, rc): ...
 
     def _on_message(self, client, userdata, message):
-        temp, time = struct.unpack("2f", message.payload)
+        # temp and time are floating point values, temp in C° and time in UNIX timestamp
+        temp, time = struct.unpack(">2d", ...)
         # add current datapoint to self.data
         ...
 

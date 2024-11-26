@@ -49,6 +49,7 @@ class BoxHandler:
         return ...
 
     # This function gets called when the client connects to the broker
+    # You have to subscribe to the right topic here
     def _on_connect(self, client, userdata, flags, rc):
         print(f"Connected with result code {rc}")
         self.client.subscribe(...)
@@ -61,7 +62,9 @@ class BoxHandler:
         current, voltage, power_factor, time = struct.unpack(
             ">4I", message.payload
         )
-        # note that the current gets returned in 0.001 A, the voltage in 0.001 V and the powerfactor as an int between -1000 and 1000
+        # note that the current gets returned in 0.001 A, the voltage in 0.001 V,
+        # the powerfactor as an int between -1000 and 1000 and the timestep as an
+        # UNIX timestamp, which is defined as number of seconds passed since January 1st 1970 (UTC)
 
         data_tmp = {}
         data_tmp["current"] = ...  # current in A
@@ -69,7 +72,6 @@ class BoxHandler:
         data_tmp["power_factor"] = ...  # between -1 and 1
         data_tmp["power"] = ...  # in kW, make sure it is positive
 
-        # data should already be sent in the right timezone
         data_tmp["time"] = ...
 
         power_pd = pd.DataFrame(data_tmp, index=[0])

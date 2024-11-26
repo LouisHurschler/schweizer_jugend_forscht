@@ -230,9 +230,7 @@ class BoilerSimulationApp:
         self.axtemp.set_facecolor(self.background)
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.plot_frame)
-        self.canvas.draw()
         self.canvas.get_tk_widget().grid(row=0, column=0)
-        self.canvas.draw()
 
     # Toggles the device state based on slider input
     def toggle_device(self, value: int):
@@ -414,7 +412,7 @@ class BoilerSimulationApp:
         xlim_end = current_xlim[1]
         xlim_start = max(current_xlim[0], xlim_end - 1.0 / (24 * 30))
 
-        # self.ax.set_xlim([xlim_start, xlim_end])
+        self.ax.set_xlim([xlim_start, xlim_end])
 
         self.ax.xaxis.set_major_locator(mdates.AutoDateLocator())
         self.ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M:%S"))
