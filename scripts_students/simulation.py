@@ -21,7 +21,7 @@ class BoilerSimulationApp:
         self.setup_general_config(root)
 
         # TODO: Initialize handlers for temperature and device controls
-        self.temperature_handler = ...
+        self.temperature_handler = TemperatureHandler()
         self.box_handler = ...
 
         # Default relay state
@@ -50,7 +50,7 @@ class BoilerSimulationApp:
         """Configures the main application window and sets initial parameters."""
         # TODO: fill out all blank spaces. Additionaly, you can change the values such that the
         #       GUI looks better
-        
+
         self.background = "white"
         self.root = root
         self.root.configure(background=self.background)
@@ -58,9 +58,10 @@ class BoilerSimulationApp:
 
         self.main_frame = tk.Frame(
             root,
-            background=...,
-            padx=..., # boundary around the main frame, set a number which looks clean
-            pady=..., # boundary around the main frame, set a number which looks clean
+            background=,
+            "white"
+            padx=...,  # boundary around the main frame, set a number which looks clean
+            pady=...,  # boundary around the main frame, set a number which looks clean
         )
 
         # Define the path to the current directory for loading resources
@@ -83,26 +84,18 @@ class BoilerSimulationApp:
         self.slider_frame.grid(row=1, column=0, sticky="w")
         self.plot_frame = tk.Frame(self.main_frame, background=self.background)
         self.plot_frame.grid(row=1, column=1, rowspan=2)
-        self.checkbutton_frame = tk.Frame(
-            self.main_frame, background=...
-        )
+        self.checkbutton_frame = tk.Frame(self.main_frame, background=...)
         self.checkbutton_frame.grid(row=2, column=0, sticky="w")
 
         # Set up fullscreen window to match screen dimensions
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
-        self.root.geometry(
-            f"{self.screen_width}x{self.screen_height}+0+0"
-        )
+        self.root.geometry(f"{self.screen_width}x{self.screen_height}+0+0")
 
         # Load and display schweizerjugendforscht logo image with scaling
-        self.image_frame_left = tk.Frame(
-            self.main_frame, background=...
-        )
+        self.image_frame_left = tk.Frame(self.main_frame, background=...)
         self.image_frame_left.grid(row=0, column=0, sticky="wn")
-        self.image_frame_right = tk.Frame(
-            self.main_frame, background=...
-        )
+        self.image_frame_right = tk.Frame(self.main_frame, background=...)
         self.image_frame_right.grid(row=0, column=1, sticky="en")
         self.original_image_sjf = Image.open(
             os.path.join(
@@ -249,7 +242,7 @@ class BoilerSimulationApp:
 
     # Updates the plot with the latest data
     # you can add additional information, for example to stop at the next timestep
-    def update_plot(self, additional_information=None)):
+    def update_plot(self, additional_information=None):
         self.box_data = self.box_handler.get_data()
         self.temperature_data = (
             self.temperature_handler.get_current_temperature()
@@ -371,8 +364,8 @@ class BoilerSimulationApp:
             zorder=1,
         )
         # only if max_value > 0, something was drawn.
-        # if something was drawn, add a legend 
-        if max_value > 0
+        # if something was drawn, add a legend
+        if max_value > 0:
             ax.legend()
 
     def configure_plot_axis(self):
@@ -383,7 +376,7 @@ class BoilerSimulationApp:
         # add ten seconds on the right side for nicer plots
         xlim_end = current_xlim[1]
         xlim_start = current_xlim[0]
-        
+
         # TODO: set limits
         self.ax.set_xlim(left=..., right=...)
 

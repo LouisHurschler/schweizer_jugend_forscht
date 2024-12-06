@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 import time
 import paho.mqtt.client as mqtt
-from data import TimeSpanLog_pb2
 import struct
 
 

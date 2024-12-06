@@ -8,6 +8,7 @@ from box_handler import BoxHandler
 from PIL import Image, ImageTk
 import datetime as dt
 import matplotlib.dates as mdates
+import time
 
 
 # convert timestamps (seconds since January 1, 1970) to datetime objects
@@ -265,40 +266,48 @@ class BoilerSimulationApp:
         # this code gets called every second. Your task is to add logic here to reach a constant temperature
         ############################# Enter logic here #############################
         # test logic which heats iff temp < target_temp - 0.9 threshold
-        # target_temp = 45
-        # threshold = 3
-        # if additional_information == "stop":
-        #     self.toggle_device("0")
-        #     additional_information = 3
-        # if additional_information != None and additional_information != "stop":
-        #     if additional_information <= 0:
-        #         additional_information = None
-        #     else:
-        #         additional_information -= 1
+        target_temp = 60
+        threshold = 3
+        # switch_to_one = False
+        # switch_to_zero = False
+        try:
+            temp = self.temperature_data["temperature"].iloc[-1]
+        except:
+            temp = 0.0
 
-        # if not self.temperature_data.empty:
-        #     temp = self.temperature_data["temperature"].iloc[-1]
-        #     if len(self.temperature_data["temperature"]) > 1:
-        #         last_temp = self.temperature_data["temperature"].iloc[-2]
-        #     else:
-        #         last_temp = target_temp
-        # else:
-        #     temp = target_temp
-        #     last_temp = target_temp
-        # if temp < target_temp - 0.9 * threshold and int(self.relay_state) == 0:
-        #     self.toggle_device("1")
-        # if temp > target_temp - 0.9 * threshold and int(self.relay_state) == 1:
-        #     self.toggle_device("0")
-        # if (
-        #     target_temp - threshold < temp < target_temp
-        #     and last_temp > temp
-        #     and int(self.relay_state) == 0
-        # ):
-        #     if additional_information == None:
-        #         self.toggle_device("1")
-        #         additional_information = "stop"
+        try:
+            last_temp = self.temperature_data["temperature"].iloc[-2]
+            temp_diff = temp - last_temp
+        except:
+            temp_diff = 0.0
 
-        # print(additional_information, temp)
+        if temp < target_temp - threshold:
+
+            if temp_diff < 0.2:
+                self.toggle_device("1")
+            else:
+                self.toggle_device("0")
+
+        if target_temp - threshold < temp < target_temp:
+
+            if temp_diff <= 0:
+                self.toggle_device("1")
+                time.sleep(0.1)
+                self.toggle_device("0")
+
+            else:
+                self.toggle_device("0")
+
+        if temp > target_temp:
+
+            if temp_diff < -0.2:
+                self.toggle_device("1")
+                time.sleep(0.1)
+                self.toggle_device("0")
+
+            else:
+                self.toggle_device("0")
+
         ############################# Enter logic here #############################
 
         self.redraw_canvas()

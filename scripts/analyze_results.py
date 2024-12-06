@@ -20,7 +20,7 @@ def plot_results(
     print(min_temp)
     print(max_temp)
 
-    ax1.plot(times, temp_data["temperature"], label="temperature [C°]")
+    ax1.plot(times, temp_data["temperature"], label="Temperature [C°]", linewidth=2.0)
     if (
         max_temp > target_temp - threshold
         and min_temp < target_temp + threshold
@@ -46,7 +46,7 @@ def plot_results(
         ax1.fill_between(
             times,
             target_temp + threshold,
-            max_temp,
+            max_temp + 2,
             color="red",
             alpha=0.5,
         )
@@ -58,13 +58,16 @@ def plot_results(
 
     to_plot = pd.to_datetime(box_data["time"], unit="s") > times.iloc[0]
 
-    ax2.plot(
+    ax2.fill_between(
         pd.to_datetime(box_data["time"], unit="s")[to_plot],
+        0.0,
         box_data["power"][to_plot],
-        label="power [kW]",
+        label="Power [kW]",
         color="orange",
+        alpha=0.7,
+        # linewidth=2.0,
     )
-    ax1.set_xlabel("time")
+    ax1.set_xlabel("Time")
     ax1.set_ylabel("Temperature [C°]")
     ax2.set_ylabel("Power [kW]")
 
@@ -75,7 +78,7 @@ def plot_results(
 def analyze_results():
     # the main goal is to minimize the mean power whilst maximizing (at best 100%) the percentage
     # in threshold
-    target_temp = 45.0
+    target_temp = 60.0
     threshold = 3.0
     current_path = os.path.dirname(os.path.abspath(__file__))
     # windows

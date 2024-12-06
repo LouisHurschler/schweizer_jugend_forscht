@@ -24,7 +24,7 @@
         hostapd
         iw
 
-        (python3.withPackages (ps: with ps;
+        (python312.withPackages (ps: with ps;
                   [
                     python-lsp-server
                     ipython
