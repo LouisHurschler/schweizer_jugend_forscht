@@ -58,8 +58,7 @@ class BoilerSimulationApp:
 
         self.main_frame = tk.Frame(
             root,
-            background=,
-            "white"
+            background=...,
             padx=...,  # boundary around the main frame, set a number which looks clean
             pady=...,  # boundary around the main frame, set a number which looks clean
         )
