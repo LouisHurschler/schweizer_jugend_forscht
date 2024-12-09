@@ -256,6 +256,8 @@ class BoilerSimulationApp:
         )
 
         # Save data to CSV files
+        # You prabably have to change the paths here depending on your OS.
+        # Note that the data gets overwritten at every save, so you could add some timestamps for each run to prevent this.
         self.box_data.to_csv(
             self.current_path + "/data/res_box.csv", index=False
         )
@@ -268,8 +270,6 @@ class BoilerSimulationApp:
         # test logic which heats iff temp < target_temp - 0.9 threshold
         target_temp = 60
         threshold = 3
-        # switch_to_one = False
-        # switch_to_zero = False
         try:
             temp = self.temperature_data["temperature"].iloc[-1]
         except:

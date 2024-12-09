@@ -9,9 +9,8 @@ client.connect(host="192.168.2.1", port=1883, keepalive=60)
 # evtl close it to enable other programs to write?
 
 while True:
-    tempfile = open(
-        "/sys/bus/w1/devices/28-000000837d52/w1_slave", "r"
-    ) 
+    # change this according to hardware
+    tempfile = open("/sys/bus/w1/devices/28-000000837d52/w1_slave", "r")
     tempdata = tempfile.read()
     tempfile.close()
 
@@ -22,6 +21,7 @@ while True:
         temperature = float(tempdata[2:]) / 1000.0
     except:
         print("error")
+        time.sleep(1)
         continue
     # print(temperature)
     curr_time = float(dt.datetime.now().timestamp())

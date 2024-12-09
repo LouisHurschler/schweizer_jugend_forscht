@@ -13,6 +13,14 @@ import datetime as dt
 import matplotlib.dates as mdates
 
 
+# convert timestamps (seconds since January 1, 1970) to datetime objects
+# note that the timestamp object shows the time measured in utc.
+# to convert to MET (UTC +1), we have to add one hour
+def convert_timestamp_to_MET_datetimes(timestamps: pd.Series) -> list:
+    times = pd.to_datetime(timestamps, unit="s") + pd.Timedelta(hours=1)
+    return times
+
+
 # BoilerSimulationApp class handles the GUI setup and functionality for a boiler simulation.
 class BoilerSimulationApp:
 
@@ -51,10 +59,10 @@ class BoilerSimulationApp:
         # TODO: fill out all blank spaces. Additionaly, you can change the values such that the
         #       GUI looks better
 
-        self.background = "white"
+        self.background = ...
         self.root = root
         self.root.configure(background=self.background)
-        self.font_size = 12
+        self.font_size = ...
 
         self.main_frame = tk.Frame(
             root,
@@ -248,6 +256,8 @@ class BoilerSimulationApp:
         )
 
         # Save data to CSV files
+        # You prabably have to change the paths here depending on your OS.
+        # Note that the data gets overwritten at every save, so you could add some timestamps for each run to prevent this.
         self.box_data.to_csv(
             self.current_path + "/data/res_box.csv", index=False
         )
@@ -260,7 +270,7 @@ class BoilerSimulationApp:
         # if you want to not heat for three seconds, you could store 3 and reduce it in every call by
         # one until it stays 0
         ############################# Enter logic here #############################
-        target_temp = 40
+        target_temp = 60
         threshold = 3
         # random heating
         if np.random.normal() > 0:
@@ -362,7 +372,7 @@ class BoilerSimulationApp:
             alpha=alphavalue,
             zorder=1,
         )
-        # only if max_value > 0, something was drawn.
+        # only if max_value > 0, something was drawn
         # if something was drawn, add a legend
         if max_value > 0:
             ax.legend()

@@ -45,15 +45,11 @@ def plot_results(
 def analyze_results():
     # the main goal is to minimize the mean power whilst maximizing (at best 100%) the percentage
     # in threshold
-    target_temp = 45.0
+    target_temp = 60.0
     threshold = 3.0
     current_path = os.path.dirname(os.path.abspath(__file__))
-    # windows
-    # box_data = pd.read_csv(current_path + "\\data\\res_box.csv")
-    # temp_data = pd.read_csv(current_path + "\\data\\res_temp.csv")
-    # linux
 
-    # get data from files
+    # get data from files, potentially change paths
     box_data = pd.read_csv(current_path + "/data/res_box.csv")
     temp_data = pd.read_csv(current_path + "/data/res_temp.csv")
     plot_results(temp_data, box_data, target_temp, threshold)
