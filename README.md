@@ -7,27 +7,27 @@ Many other projects, for example the _Enflate Strompilot_ project, rely on simil
 To replicate the 2024 student project setup, you will need the following hardware:
 
 - **Enflate Box**: A Swisbox device equipped with an SU100 energy measurement unit.
-- **Temperature Measurement Device**: A Device capable of measuring temperature and send this to the broker (For example raspberry pi with DS18B20 temperature sensor)
+- **Temperature Measurement Device**: A Device capable of measuring temperature and send this data to the broker (for example a Raspberry Pi with a DS18B20 temperature sensor).
 - **MQTT Broker**: Accessible by external laptops, the Enflate Box, and the temperature measurement device.
 - **Heating Devices**: Such as electric heaters or cooking plates.
 
 ## Enflate Box:
-The Enflate box is a device capable of measuring energy data and switching relays based on MQTT messages.
+The Enflate Box is a device capable of measuring energy data and switching relays based on MQTT messages.
 
 It is able to connect to a broker and send the data and receive instructions using MQTT messages.
 
-The Swisbox cofiguration can be modified using the Swisbox-explorer application, where the broker's IP-address can be set.
+The Swisbox configuration can be modified using the Swisbox-explorer application, where the broker's IP-address can be set.
 The Swisbox must be able to reach this IP address.
 One way to achieve this is by connecting the Swisbox’s LAN cable to your laptop and starting a broker on your laptop at an accessible address.
 
 
-Alternatively, you can use the setup from the Enflate project and access the broker (currently hosted at Florian's home) via the wlan of the router inside the Enflate Box.
-However, this method requires students to connect to the Enflate project's router and may consume a significant amount of network data, which is limited for the project.
+Alternatively, you can use the setup from the Enflate project and access the broker (currently hosted at Florian's home) via the WLAN provided by the router inside the Enflate Box.
+However, this method requires students to connect to the Enflate project's router. They may consume a significant amount of network data, which is limited for the whole Enflate project.
 
 ## Temperature Measurement Device
 To replicate the 2024 project, you will need a temperature sensor.
-I used a Raspberry Pi with a DS18B20 temperature sensor. To send the temperature data, you can use [this](scripts/temperature_measurements.py) script, which is designed for a Rasperry Pi 5.
-The sensor was connected as described in [this guide](https://cbrell.de/blog/raspilab-wetterstation-dritte-mission-temperatur-messen-mit-dem-bs18b20/)
+I used a Raspberry Pi with a DS18B20 temperature sensor. To send the temperature data, you can use [this](scripts/temperature_measurements.py) script, which is designed for a Raspberry Pi 5.
+The sensor was connected as described in [this guide](https://cbrell.de/blog/raspilab-wetterstation-dritte-mission-temperatur-messen-mit-dem-bs18b20/).
 
 ## MQTT Broker
 You can run a MQTT broker using mosquitto.
@@ -44,7 +44,7 @@ This should only be done because the data here is not sensitive and this is a te
 Ensure that the devices can connect to this broker. To achieve this, they must be on a shared IP space, such as an open network.
 In environments like HSLU's network, devices might not have access to other devices IP spaces.
 
-To overcome this, I created a private network using **dnsmasq** as a DNS server and **hostapd** to turn my laptop’s wlan card into an access point. This setup allowed external devices to connect (similar to a hotspot but self-managed).
+To overcome this, I created a private network using **dnsmasq** as a DNS server and **hostapd** to turn my laptop’s WLAN card into an access point. This setup allowed external devices to connect (similar to a hotspot but self-managed).
 
 Additionally, I enabled port forwarding from this private network to HSLU's LAN network to provide internet access.
 This allowed other devices to connect to my laptop for both broker communication and internet access.
@@ -52,7 +52,7 @@ This allowed other devices to connect to my laptop for both broker communication
 **Note:** This setup was implemented using a Linux OS. Achieving similar functionality on Windows may be more complex.
 Another option is to use an open network for connectivity.
 
-If this method fails, you can use the broker and network of the Enflate project by connecting the devices to the wlan of the Enflate box.
+If this method fails, you can use the broker and network of the Enflate project by connecting the devices to the WLAN of the Enflate Box.
 If you do it like this, do not forget to ask Florian or some other Enflate team member if this is okay and how much internet can be used.
 
 
@@ -61,13 +61,14 @@ The final task for the students is to connect to the broker, be able to receive 
 You can find a master solution in the _scripts_ folder.
 
 The students should modify the python files in the _scripts_students_ folder, containing a skeleton code with blank spaces.
-Then, they should write a code in the _update_plot_ function in the simulation script. This function is called recursively every second (if the program runs inefficiently, it gets called less frequently)
+Then, they should write a code in the _update_plot_ function in the simulation script. This function is called recursively every second (if the program runs inefficiently, it gets called less frequently).
 
-Don't forget to clarify if the students have some python environment available and if not, borrow a laptop for the week with pycharm installed.
+Ensure the students have access to a laptop with a Python environment set up, or arrange to provide one for the duration of the project.
 
 Don't forget to change the topics in the box- and temperature handlers according to the topics sent to the broker.
 
-The goal of their script should be to control a device. For example, we heated water in a plate on an electric cooking plate whilst measuring the temperature of the water.
-Then their script turned the cooking plate on and off, with the goal to reach a constant temperature of the water (60 C°). The difficulties is to add the temperature of the cooking plate to your computations / script.
+The goal of their script should be to control a device. For example, we heated water in a container on the electric cooking plate whilst measuring the temperature of the water.
+Then their script turned the cooking plate on and off, with the goal to reach a constant temperature of the water (60 C°). 
+The main difficulty is to include the temperature of the cooking plate into your script such that no oscillations arise.
 
 Good luck!
