@@ -20,7 +20,12 @@ def plot_results(
     print(min_temp)
     print(max_temp)
 
-    ax1.plot(times, temp_data["temperature"], label="Temperature [C°]", linewidth=2.0)
+    ax1.plot(
+        times,
+        temp_data["temperature"],
+        label="Temperature [C°]",
+        linewidth=2.0,
+    )
     if (
         max_temp > target_temp - threshold
         and min_temp < target_temp + threshold
@@ -81,14 +86,16 @@ def analyze_results():
     target_temp = 60.0
     threshold = 3.0
     current_path = os.path.dirname(os.path.abspath(__file__))
-    # windows
-    # box_data = pd.read_csv(current_path + "\\data\\res_box.csv")
-    # temp_data = pd.read_csv(current_path + "\\data\\res_temp.csv")
-    # linux
+
+    timestep_name = "TODO"
 
     # get data from files
-    box_data = pd.read_csv(current_path + "/data/res_box.csv")
-    temp_data = pd.read_csv(current_path + "/data/res_temp.csv")
+    box_data = pd.read_csv(
+        current_path + "/" + timestep_name + "/data/res_box.csv"
+    )
+    temp_data = pd.read_csv(
+        current_path + "/" + timestep_name + "/data/res_temp.csv"
+    )
 
     temperature_reached = temp_data["temperature"][
         temp_data["temperature"] >= target_temp - threshold

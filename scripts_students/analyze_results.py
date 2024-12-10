@@ -4,10 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-# TODO:
-# add relay state??? For that, it should be added in simulation??? For that, it should be added in simulation
-# think about other ways of analyzing results, excel? jupyter notebook?
-
 
 def plot_results(
     temp_data: pd.DataFrame,
@@ -49,9 +45,15 @@ def analyze_results():
     threshold = 3.0
     current_path = os.path.dirname(os.path.abspath(__file__))
 
+    timestep_name = ...
+
     # get data from files, potentially change paths
-    box_data = pd.read_csv(current_path + "/data/res_box.csv")
-    temp_data = pd.read_csv(current_path + "/data/res_temp.csv")
+    box_data = pd.read_csv(
+        current_path + "/" + timestep_name + "/data/res_box.csv"
+    )
+    temp_data = pd.read_csv(
+        current_path + "/" + timestep_name + "/data/res_temp.csv"
+    )
     plot_results(temp_data, box_data, target_temp, threshold)
     # analyze results further.
     # possible questions:

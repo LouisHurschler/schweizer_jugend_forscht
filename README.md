@@ -37,14 +37,14 @@ listener 1883 0.0.0.0
 allow_anonymous true
 persistence true
 ```
-This enables the broker to listen to any IP address and accept anonymous requests, which makes it less secure but reduces possible errors.
+This enables the broker to listen to any IP address and accept anonymous requests, which makes it less secure but reduces possible sources of errors.
 This should only be done because the data here is not sensitive and this is a test project.
-
 
 Ensure that the devices can connect to this broker. To achieve this, they must be on a shared IP space, such as an open network.
 In environments like HSLU's network, devices might not have access to other devices IP spaces.
 
-To overcome this, I created a private network using **dnsmasq** as a DNS server and **hostapd** to turn my laptop’s WLAN card into an access point. This setup allowed external devices to connect (similar to a hotspot but self-managed).
+To overcome this, I created a private network using **dnsmasq** as a DNS server and **hostapd** to turn my laptop’s WLAN card into an access point. 
+This setup allowed external devices to connect (similar to a hotspot but self-managed).
 
 Additionally, I enabled port forwarding from this private network to HSLU's LAN network to provide internet access.
 This allowed other devices to connect to my laptop for both broker communication and internet access.
@@ -63,12 +63,15 @@ You can find a master solution in the _scripts_ folder.
 The students should modify the python files in the _scripts_students_ folder, containing a skeleton code with blank spaces.
 Then, they should write a code in the _update_plot_ function in the simulation script. This function is called recursively every second (if the program runs inefficiently, it gets called less frequently).
 
-Ensure the students have access to a laptop with a Python environment set up, or arrange to provide one for the duration of the project.
+Ensure that the students have access to a laptop with a Python environment set up, or arrange to provide one for the duration of the project.
 
-Don't forget to change the topics in the box- and temperature handlers according to the topics sent to the broker.
+Don't forget to change the topics in the box- and temperature handlers according to the topics sent to the broker from the specific Swisbox or temperature measurement device.
 
-The goal of their script should be to control a device. For example, we heated water in a container on the electric cooking plate whilst measuring the temperature of the water.
-Then their script turned the cooking plate on and off, with the goal to reach a constant temperature of the water (60 C°). 
-The main difficulty is to include the temperature of the cooking plate into your script such that no oscillations arise.
+At the end, the students have to write a scripts which is able to control a device by powering it on or off. 
+For example, the device could be an electric cooking plate with a container of water on top of it. 
+Then, the students have to write a sript which powers the cooking plate such that the water reaches a fixed constant temperature as fast as possible.
+The difficulty here is that the water gets heated indirectly. The electric energy first heats the cooking plate, which heats the water.
+When you are turning the energy off, the cooking plate still remains warm for some time, such that the effect of turning the energy off gets delayed.
+Therefore the students have to write a scripts which prevents those oscillations.
 
 Good luck!

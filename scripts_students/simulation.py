@@ -74,6 +74,15 @@ class BoilerSimulationApp:
         # Define the path to the current directory for loading resources
         self.current_path = os.path.dirname(os.path.abspath(__file__))
 
+        # for storing results
+        self.timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        self.result_dir = os.path.join(
+            self.current_path + "/data", self.timestamp
+        )
+
+        if not os.path.isdir(self.result_dir):
+            os.mkdir(self.result_dir)
+
         # create a 3x2 grid for layout
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid_columnconfigure(1, weight=2)
@@ -258,11 +267,9 @@ class BoilerSimulationApp:
         # Save data to CSV files
         # You prabably have to change the paths here depending on your OS.
         # Note that the data gets overwritten at every save, so you could add some timestamps for each run to prevent this.
-        self.box_data.to_csv(
-            self.current_path + "/data/res_box.csv", index=False
-        )
+        self.box_data.to_csv(self.result_dir + "/res_box.csv", index=False)
         self.temperature_data.to_csv(
-            self.current_path + "/data/res_temp.csv", index=False
+            self.result_dir + "/res_temp.csv", index=False
         )
 
         # this code gets called every second. Your task is to add logic here to reach a constant temperature
